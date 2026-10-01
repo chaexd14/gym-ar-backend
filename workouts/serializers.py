@@ -21,6 +21,7 @@ class UserSerializer(serializers.ModelSerializer):
 class RepDetailSerializer(serializers.ModelSerializer):
     repNumber = serializers.IntegerField(source='rep_number', required=False)
     isGood = serializers.BooleanField(source='is_good', required=False)
+    isPerfect = serializers.BooleanField(source='is_perfect', required=False)
     minKneeAngle = serializers.FloatField(source='min_knee_angle', required=False)
     durationMs = serializers.IntegerField(source='duration_ms', required=False)
 
@@ -32,6 +33,9 @@ class RepDetailSerializer(serializers.ModelSerializer):
             'repNumber',
             'is_good',
             'isGood',
+            'is_perfect',
+            'isPerfect',
+            'score',
             'min_knee_angle',
             'minKneeAngle',
             'duration_ms',
@@ -40,10 +44,11 @@ class RepDetailSerializer(serializers.ModelSerializer):
         ]
 
     def to_internal_value(self, data):
-        # Normalize camelCase to snake_case if incoming from frontend
         normalized = {}
         normalized['rep_number'] = data.get('rep_number', data.get('repNumber', 1))
         normalized['is_good'] = data.get('is_good', data.get('isGood', True))
+        normalized['is_perfect'] = data.get('is_perfect', data.get('isPerfect', False))
+        normalized['score'] = data.get('score', 100.0)
         normalized['min_knee_angle'] = data.get('min_knee_angle', data.get('minKneeAngle', 180.0))
         normalized['duration_ms'] = data.get('duration_ms', data.get('durationMs', 0))
         normalized['issues'] = data.get('issues', [])
@@ -55,8 +60,10 @@ class WorkoutSessionSerializer(serializers.ModelSerializer):
     rep_history = RepDetailSerializer(many=True, required=False)
     totalReps = serializers.IntegerField(source='total_reps', required=False)
     goodReps = serializers.IntegerField(source='good_reps', required=False)
+    perfectReps = serializers.IntegerField(source='perfect_reps', required=False)
     flaggedReps = serializers.IntegerField(source='flagged_reps', required=False)
     accuracyRate = serializers.FloatField(source='accuracy_rate', required=False)
+    averageScore = serializers.FloatField(source='average_score', required=False)
     startTime = serializers.IntegerField(source='start_time', required=False)
     endTime = serializers.IntegerField(source='end_time', required=False)
 
@@ -64,15 +71,20 @@ class WorkoutSessionSerializer(serializers.ModelSerializer):
         model = WorkoutSession
         fields = [
             'id',
+            'username',
             'exercise',
             'total_reps',
             'totalReps',
             'good_reps',
             'goodReps',
+            'perfect_reps',
+            'perfectReps',
             'flagged_reps',
             'flaggedReps',
             'accuracy_rate',
             'accuracyRate',
+            'average_score',
+            'averageScore',
             'start_time',
             'startTime',
             'end_time',
@@ -84,15 +96,17 @@ class WorkoutSessionSerializer(serializers.ModelSerializer):
 
     def to_internal_value(self, data):
         normalized = {}
+        normalized['username'] = data.get('username', 'Athlete').strip() or 'Athlete'
         normalized['exercise'] = data.get('exercise', 'Bodyweight Squats')
         normalized['total_reps'] = data.get('total_reps', data.get('totalReps', 0))
         normalized['good_reps'] = data.get('good_reps', data.get('goodReps', 0))
+        normalized['perfect_reps'] = data.get('perfect_reps', data.get('perfectReps', 0))
         normalized['flagged_reps'] = data.get('flagged_reps', data.get('flaggedReps', 0))
         normalized['accuracy_rate'] = data.get('accuracy_rate', data.get('accuracyRate', 0.0))
+        normalized['average_score'] = data.get('average_score', data.get('averageScore', normalized['accuracy_rate']))
         normalized['start_time'] = data.get('start_time', data.get('startTime'))
         normalized['end_time'] = data.get('end_time', data.get('endTime'))
         
-        # Ingest rep list from either key
         reps_data = data.get('repHistory', data.get('rep_history', []))
         normalized['rep_history'] = reps_data
 
