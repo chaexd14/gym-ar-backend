@@ -61,15 +61,15 @@ class WorkoutSessionViewSet(viewsets.ModelViewSet):
             .exclude(username__exact='')
             .values('username')
             .annotate(
-                total_reps=Sum('total_reps'),
-                good_reps=Sum('good_reps'),
-                perfect_reps=Sum('perfect_reps'),
-                avg_score=Avg('accuracy_rate'),
+                total_reps_sum=Sum('total_reps'),
+                good_reps_sum=Sum('good_reps'),
+                perfect_reps_sum=Sum('perfect_reps'),
+                avg_score_val=Avg('accuracy_rate'),
                 best_session_reps=Max('good_reps'),
                 sessions_count=Count('id'),
                 last_workout=Max('created_at'),
             )
-            .order_by('-good_reps', '-avg_score')
+            .order_by('-good_reps_sum', '-avg_score_val')
         )
 
         results = []
@@ -77,10 +77,10 @@ class WorkoutSessionViewSet(viewsets.ModelViewSet):
             results.append({
                 'rank': rank,
                 'username': stat['username'],
-                'totalReps': stat['total_reps'] or 0,
-                'goodReps': stat['good_reps'] or 0,
-                'perfectReps': stat['perfect_reps'] or 0,
-                'avgScore': round(stat['avg_score'] or 0, 1),
+                'totalReps': stat['total_reps_sum'] or 0,
+                'goodReps': stat['good_reps_sum'] or 0,
+                'perfectReps': stat['perfect_reps_sum'] or 0,
+                'avgScore': round(stat['avg_score_val'] or 0, 1),
                 'bestSessionReps': stat['best_session_reps'] or 0,
                 'sessionsCount': stat['sessions_count'] or 0,
                 'lastWorkout': stat['last_workout'],
