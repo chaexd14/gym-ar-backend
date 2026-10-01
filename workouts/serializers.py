@@ -24,6 +24,10 @@ class RepDetailSerializer(serializers.ModelSerializer):
     isPerfect = serializers.BooleanField(source='is_perfect', required=False)
     minKneeAngle = serializers.FloatField(source='min_knee_angle', required=False)
     durationMs = serializers.IntegerField(source='duration_ms', required=False)
+    snapshotImage = serializers.CharField(source='snapshot_image', required=False, allow_null=True, allow_blank=True)
+    snapshotReason = serializers.CharField(source='snapshot_reason', required=False, allow_null=True, allow_blank=True)
+    snapshotAngle = serializers.FloatField(source='snapshot_angle', required=False, allow_null=True)
+    lowestScore = serializers.FloatField(source='lowest_score', required=False, allow_null=True)
 
     class Meta:
         model = RepDetail
@@ -36,11 +40,19 @@ class RepDetailSerializer(serializers.ModelSerializer):
             'is_perfect',
             'isPerfect',
             'score',
+            'lowest_score',
+            'lowestScore',
             'min_knee_angle',
             'minKneeAngle',
             'duration_ms',
             'durationMs',
-            'issues'
+            'issues',
+            'snapshot_image',
+            'snapshotImage',
+            'snapshot_reason',
+            'snapshotReason',
+            'snapshot_angle',
+            'snapshotAngle',
         ]
 
     def to_internal_value(self, data):
@@ -49,9 +61,13 @@ class RepDetailSerializer(serializers.ModelSerializer):
         normalized['is_good'] = data.get('is_good', data.get('isGood', True))
         normalized['is_perfect'] = data.get('is_perfect', data.get('isPerfect', False))
         normalized['score'] = data.get('score', 100.0)
+        normalized['lowest_score'] = data.get('lowest_score', data.get('lowestScore', normalized['score']))
         normalized['min_knee_angle'] = data.get('min_knee_angle', data.get('minKneeAngle', 180.0))
         normalized['duration_ms'] = data.get('duration_ms', data.get('durationMs', 0))
         normalized['issues'] = data.get('issues', [])
+        normalized['snapshot_image'] = data.get('snapshot_image', data.get('snapshotImage'))
+        normalized['snapshot_reason'] = data.get('snapshot_reason', data.get('snapshotReason'))
+        normalized['snapshot_angle'] = data.get('snapshot_angle', data.get('snapshotAngle'))
         return super().to_internal_value(normalized)
 
 
